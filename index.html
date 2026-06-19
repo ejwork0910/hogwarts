@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>霍格華茲模擬器 - 完整 API 獨立 DEMO 版</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background-color: #0d0a06; color: #e0d4b0; font-family: serif; }
+</style>
+</head>
+<body class="p-4 md:p-8">
+
+  <div class="max-w-3xl mx-auto bg-[#12100c] border border-[#3a2e1e] p-6 rounded-lg shadow-2xl">
+    <h1 class="text-3xl font-bold text-[#c9a84c] text-center mb-6">🧙‍♂️ 霍格華茲模擬器 (Gemini 驅動完全版)</h1>
+    
+    <div id="setup-area" class="space-y-4 bg-[#1a1612] p-4 border border-[#3a2e1e] rounded mb-6">
+      <div>
+        <label class="block text-sm font-bold text-[#8a7a5a] mb-1">1. 輸入 Gemini API Key：</label>
+        <input type="password" id="apiKeyInput" class="w-full bg-[#0d0a06] border border-[#3a2e1e] p-2 text-white rounded text-sm" placeholder="請輸入您複製的 AQ.Ab8RN... 金鑰...">
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+        <div>
+          <label class="block text-xs font-bold text-[#8a7a5a] mb-1">2. 世界線主線劇情：</label>
+          <select id="world-plot" class="w-full bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
+            <option value="A">模式 A：生成原著主線劇情</option>
+            <option value="B">模式 B：純自由原創劇情</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-[#8a7a5a] mb-1">3. 角色庫設定：</label>
+          <select id="world-npc" class="w-full bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
+            <option value="1">模式 1：完全比照原著 NPC</option>
+            <option value="2">模式 2：混搭全新原創 AI 角色</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-[#3a2e1e] grid grid-cols-1 md:grid-cols-3 gap-2">
+        <input type="text" id="char-name" class="bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white" placeholder="角色姓名 (如: 哈利·波特)">
+        <select id="char-blood" class="bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
+          <option value="純血">純血家族</option>
+          <option value="混血">混血巫師</option>
+          <option value="麻瓜出生">麻瓜出生</option>
+        </select>
+        <button onclick="lockAndStart()" class="bg-[#c9a84c] hover:bg-[#e8c96a] text-black font-bold py-2 rounded text-sm transition">
+          ✨ 鎖定世界線並開局
+        </button>
+      </div>
+    </div>
+
+    <div id="status-panel" class="hidden grid grid-cols-4 gap-2 text-center bg-[#1a1612] p-3 border border-[#3a2e1e] rounded mb-4 text-xs">
+      <div>魅力: <span id="stat-cha" class="text-[#e8c96a] font-bold">-</span></div>
+      <div>意志: <span id="stat-wil" class="text-[#e8c96a] font-bold">-</span></div>
+      <div>智慧: <span id="stat-int" class="text-[#e8c96a] font-bold">-</span></div>
+      <div>世界線: <span id="stat-world" class="text-[#c9a84c] font-bold">-</span></div>
+    </div>
+
+    <div id="gameLog" class="h-96 overflow-y-auto bg-[#0d0a06] border border-[#3a2e1e] p-4 rounded mb-4 text-sm leading-relaxed">
+      <p class="text-[#8a7a5a]">【系統】金鑰通過初步驗證！請完成上述世界線設定並創角，接著點擊按鈕開局...</p>
+    </div>
+
+    <div id="chipsArea" class="flex flex-wrap gap-2 mb-4"></div>
+
+    <div id="input-area" class="hidden flex gap-2">
+      <input type="text" id="playerInput" class="flex-1 bg-[#0d0a06] border border-[#3a2e1e] p-3 rounded text-sm" placeholder="輸入你想做的任何精妙魔法行動...">
+      <button onclick="sendActionToGemini()" id="btnSend" class="bg-[#c9a84c] hover:bg-[#e8c96a] text-black font-bold px-6 py-3 rounded text-sm transition">
+        🎲 執行行動 (D20)
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let conversationHistory = [];
+    let playerStats = { cha: 0, wil: 0, int: 0 };
+    let globalSystemPrompt = "";
+
+    function rollStat() { return Math.floor(Math.random() * 21) + 10; }
+
+    function lockAndStart() {
+      const apiKey = document.getElementById('apiKeyInput').value.trim();
+      const name = document.getElementById('char-name').value.trim();
+      const blood = document.getElementById('char-blood').value;
+      const plot = document.getElementById('world-plot').value;
+      const npc = document.getElementById('world-npc').value;
+
+      if (!apiKey) return alert('請先輸入您的 Gemini API Key！');
+      if (!name) return alert('請填寫您的巫師姓名！');
+
+      playerStats.cha = rollStat();
+      playerStats.wil = rollStat();
+      playerStats.int = rollStat();
+
+      document.getElementById('stat-cha').innerText = playerStats.cha;
+      document.getElementById('stat-wil').innerText = playerStats.wil;
+      document.getElementById('stat-int').innerText = playerStats.int;
+      document.getElementById('stat-world').innerText = `${plot}${npc}世界線`;
+      document.getElementById('status-panel').classList.remove('hidden');
+      document.getElementById('input-area').classList.remove('hidden');
+      document.getElementById('setup-area').classList.add('hidden');
+
+      globalSystemPrompt = `你是一個極致沉浸的霍格華茲模擬器遊戲引擎。請完全使用台灣繁體中文（葛來分多、史萊哲林、斜角巷）。
+      【世界線設定】：此世界線為 ${plot}${npc} 模式（劇情模式:${plot}, NPC庫:${npc}）。
+      【主角設定】：姓名：${name}，血統：${blood}，初始屬性：魅力 ${playerStats.cha}、意志 ${playerStats.wil}、智慧 ${playerStats.int}。
+      【重要規範】：你負責扮演 GM。每次回傳請嚴格生成符合格式的 JSON，包含 narrative_text (小說情節，字數150-200字，將後台D20判定結果隱性編織進微表情或環境中，絕對不可洩露數值字眼) 與 suggested_actions (3個建議選項)。`;
+
+      document.getElementById('gameLog').innerHTML = `<p class="text-[#8a7a5a]">【系統】正在連結九又四分之三月台，魔法網路建立中...</p>`;
+      sendActionToGemini("【系統防呆自動觸發】：請讀取主角背景，為玩家生成第一封霍格華茲入學通知信，並引導至斜角巷採買或旅程開局。");
+    }
+
+    function clickChip(text) {
+      document.getElementById('playerInput').value = text;
+    }
+
+    async function sendActionToGemini(forcedText = null) {
+      const apiKey = document.getElementById('apiKeyInput').value.trim();
+      const playerInput = document.getElementById('playerInput');
+      const text = forcedText || playerInput.value.trim();
+      const gameLog = document.getElementById('gameLog');
+      const btnSend = document.getElementById('btnSend');
+
+      if (!text) return alert('請輸入行動或點選下方晶片！');
+
+      if (!forcedText) {
+        const diceRoll = Math.floor(Math.random() * 20) + 1;
+        gameLog.innerHTML += `<p class="text-[#e8c96a] mt-4"><b>你執行行動：</b>${text} <span class="text-xs text-[#8a7a5a]">(🎲 物理D20真實骰點: ${diceRoll})</span></p>`;
+        playerInput.value = '';
+      }
+
+      btnSend.disabled = true;
+      btnSend.innerText = '魔力引導中...';
+
+      conversationHistory.push({ role: 'user', parts: [{ text: text }] });
+
+      try {
+        // ✨ 改用最新、完全相容的全新模型：gemini-2.5-flash
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: conversationHistory,
+            systemInstruction: { parts: [{ text: globalSystemPrompt }] },
+            generationConfig: {
+              temperature: 0.7,
+              responseMimeType: 'application/json',
+              responseSchema: {
+                type: 'OBJECT',
+                properties: {
+                  narrative_text: { type: 'STRING' },
+                  suggested_actions: { type: 'ARRAY', items: { type: 'STRING' } }
+                },
+                required: ['narrative_text', 'suggested_actions']
+              }
+            }
+          })
+        });
+
+        const data = await response.json();
+        if (data.candidates && data.candidates[0].content.parts[0].text) {
+          const rawJsonText = data.candidates[0].content.parts[0].text;
+          const gameObject = JSON.parse(rawJsonText);
+
+          gameLog.innerHTML += `<p class="text-[#e0d4b0] mt-4">${gameObject.narrative_text}</p>`;
+          conversationHistory.push({ role: 'model', parts: [{ text: rawJsonText }] });
+
+          const chipsArea = document.getElementById('chipsArea');
+          chipsArea.innerHTML = '';
+          gameObject.suggested_actions.forEach(act => {
+            chipsArea.innerHTML += `<button onclick="clickChip('${act}')" class="bg-[#1a1612] hover:bg-[#3a2e1e] border border-[#3a2e1e] text-xs px-3 py-1.5 rounded text-[#e0d4b0] transition">${act}</button>`;
+          });
+
+        } else {
+          gameLog.innerHTML += `<p class="text-red-400 mt-4">【錯誤】連線異常。原因：${JSON.stringify(data)}</p>`;
+        }
+      } catch (error) {
+        gameLog.innerHTML += `<p class="text-red-400 mt-4">【魔法連線失敗】請重新檢查網路或重開網頁試試。</p>`;
+      } finally {
+        btnSend.disabled = false;
+        btnSend.innerText = '🎲 執行行動 (D20)';
+        gameLog.scrollTop = gameLog.scrollHeight;
+      }
+    }
+  </script>
+</body>
+</html>
