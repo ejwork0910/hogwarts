@@ -2,144 +2,430 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<title>霍格華茲模擬器 - 完整 API 獨立 DEMO 版</title>
+<title>霍格華茲模擬器 - 極致沉浸式 V2 完全版</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   body { background-color: #0d0a06; color: #e0d4b0; font-family: serif; }
+  /* 客製化滾動條 */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0d0a06; }
+  ::-webkit-scrollbar-thumb { background: #3a2e1e; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #c9a84c; }
 </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 md:p-8 min-h-screen flex flex-col justify-between">
 
-  <div class="max-w-3xl mx-auto bg-[#12100c] border border-[#3a2e1e] p-6 rounded-lg shadow-2xl">
-    <h1 class="text-3xl font-bold text-[#c9a84c] text-center mb-6">🧙‍♂️ 霍格華茲模擬器 (Gemini 驅動完全版)</h1>
+  <div class="max-w-5xl mx-auto w-full bg-[#12100c] border border-[#3a2e1e] p-6 rounded-lg shadow-2xl flex flex-col justify-between min-h-[85vh]">
     
-    <div id="setup-area" class="space-y-4 bg-[#1a1612] p-4 border border-[#3a2e1e] rounded mb-6">
-      <div>
-        <label class="block text-sm font-bold text-[#8a7a5a] mb-1">1. 輸入 Gemini API Key：</label>
-        <input type="password" id="apiKeyInput" class="w-full bg-[#0d0a06] border border-[#3a2e1e] p-2 text-white rounded text-sm" placeholder="請輸入您複製的 AQ.Ab8RN... 金鑰...">
+    <div>
+      <h1 class="text-3xl font-bold text-[#c9a84c] text-center mb-2">🧙‍♂️ 霍格華茲模擬器</h1>
+      <p class="text-xs text-center text-[#8a7a5a] mb-6">極致沉浸式 TRPG 遊戲引擎 (V2 Core) Powered by Gemini 2.5-flash</p>
+    </div>
+
+    <div id="setup-area" class="space-y-4 bg-[#1a1612] p-6 border border-[#3a2e1e] rounded mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold text-[#8a7a5a] mb-1">🔑 輸入 Gemini API Key：</label>
+          <input type="password" id="apiKeyInput" class="w-full bg-[#0d0a06] border border-[#3a2e1e] p-2 text-white rounded text-sm placeholder-[#5a4e3b]" placeholder="請輸入您的 API 金鑰 (AIzaSy...)">
+        </div>
+        <div class="flex items-end gap-2">
+          <button onclick="checkArchive()" class="w-full bg-[#3a2e1e] hover:bg-[#5a4e3b] text-[#e0d4b0] font-bold py-2 px-4 rounded text-sm transition border border-[#5a4e3b]">
+            📂 檢查本地存檔
+          </button>
+          <button id="btnContinue" onclick="loadGame()" class="w-full bg-[#8a7a5a] text-black font-bold py-2 px-4 rounded text-sm transition hidden opacity-50 cursor-not-allowed">
+            ⏳ 繼續遊戲
+          </button>
+        </div>
       </div>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-        <div>
-          <label class="block text-xs font-bold text-[#8a7a5a] mb-1">2. 世界線主線劇情：</label>
-          <select id="world-plot" class="w-full bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
-            <option value="A">模式 A：生成原著主線劇情</option>
-            <option value="B">模式 B：純自由原創劇情</option>
-          </select>
+      <div class="border-t border-[#3a2e1e] pt-4">
+        <h3 class="text-md font-bold text-[#c9a84c] mb-3">✨ 開設新遊戲與世界線設定</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-bold text-[#8a7a5a] mb-1">世界線劇情 (主線)：</label>
+            <select id="world-plot" class="w-full bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
+              <option value="A">模式 A：生成原著主線劇情</option>
+              <option value="B">模式 B：純自由原創劇情</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#8a7a5a] mb-1">角色庫範圍 (NPC)：</label>
+            <select id="world-npc" class="w-full bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
+              <option value="1">模式 1：完全比照原著 NPC</option>
+              <option value="2">模式 2：混搭全新原創 AI 角色</option>
+              <option value="3">模式 3：僅教職員原著，學生全原創</option>
+              <option value="4">模式 4：全原創 NPC</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#8a7a5a] mb-1">斜角巷起跑：</label>
+            <select id="world-diagon" class="w-full bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
+              <option value="yes">是：完整體驗斜角巷採買與火車旅程</option>
+              <option value="no">否：極速快轉，直接在大禮堂前開局</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="block text-xs font-bold text-[#8a7a5a] mb-1">3. 角色庫設定：</label>
-          <select id="world-npc" class="w-full bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
-            <option value="1">模式 1：完全比照原著 NPC</option>
-            <option value="2">模式 2：混搭全新原創 AI 角色</option>
-          </select>
-        </div>
-      </div>
 
-      <div class="pt-2 border-t border-[#3a2e1e] grid grid-cols-1 md:grid-cols-3 gap-2">
-        <input type="text" id="char-name" class="bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white" placeholder="角色姓名 (如: 哈利·波特)">
-        <select id="char-blood" class="bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
-          <option value="純血">純血家族</option>
-          <option value="混血">混血巫師</option>
-          <option value="麻瓜出生">麻瓜出生</option>
-        </select>
-        <button onclick="lockAndStart()" class="bg-[#c9a84c] hover:bg-[#e8c96a] text-black font-bold py-2 rounded text-sm transition">
-          ✨ 鎖定世界線並開局
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <input type="text" id="char-name" class="bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white" placeholder="巫師姓名 (如: 哈利·波特)">
+          <select id="char-gender" class="bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
+            <option value="男">男巫</option>
+            <option value="女">女巫</option>
+            <option value="非二元">非二元</option>
+          </select>
+          <select id="char-blood" class="bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white">
+            <option value="純血">純血家族 (Pure-blood)</option>
+            <option value="混血">混血巫師 (Half-blood)</option>
+            <option value="麻瓜出生">麻瓜出生 (Muggle-born)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <input type="text" id="char-love" class="bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white" placeholder="預設戀愛對象設定 (選填)">
+          <input type="text" id="char-background" class="bg-[#0d0a06] border border-[#3a2e1e] p-2 rounded text-sm text-white" placeholder="其他背景自創故事/祕密 (選填)">
+        </div>
+
+        <button onclick="lockAndStart()" class="w-full bg-[#c9a84c] hover:bg-[#e8c96a] text-black font-bold py-3 rounded text-sm transition tracking-wider">
+          ✨ 鎖定世界線並初始化開局
         </button>
       </div>
     </div>
 
-    <div id="status-panel" class="hidden grid grid-cols-4 gap-2 text-center bg-[#1a1612] p-3 border border-[#3a2e1e] rounded mb-4 text-xs">
-      <div>魅力: <span id="stat-cha" class="text-[#e8c96a] font-bold">-</span></div>
-      <div>意志: <span id="stat-wil" class="text-[#e8c96a] font-bold">-</span></div>
-      <div>智慧: <span id="stat-int" class="text-[#e8c96a] font-bold">-</span></div>
-      <div>世界線: <span id="stat-world" class="text-[#c9a84c] font-bold">-</span></div>
+    <div id="game-panel" class="hidden space-y-4">
+      
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-center bg-[#1a1612] p-3 border border-[#3a2e1e] rounded text-xs">
+        <div>🧙‍♂️ 姓名: <span id="ui-name" class="text-white font-bold">-</span></div>
+        <div>🩸 血統: <span id="ui-blood" class="text-white font-bold">-</span></div>
+        <div>🏰 學院: <span id="ui-house" class="text-[#c9a84c] font-bold">尚未分院</span></div>
+        <div>📅 時間: <span id="ui-time" class="text-white font-bold">第 1 學年 第 1 章</span></div>
+        <div>⏳ 剩餘額度: <span id="ui-quota" class="text-[#e8c96a] font-bold">5/5 (平日)</span></div>
+        <div>💰 財富: <span id="ui-money" class="text-[#e8c96a] font-bold">0 加隆</span></div>
+      </div>
+
+      <div class="grid grid-cols-3 md:grid-cols-6 gap-2 text-center bg-[#0d0a06] p-2 border border-[#3a2e1e] rounded text-xs">
+        <div class="p-1 border border-[#1a1612]">🔮 魅力: <span id="stat-cha" class="text-[#e8c96a] font-bold">-</span> (<span id="mod-cha">-</span>)</div>
+        <div class="p-1 border border-[#1a1612]">🛡️ 意志: <span id="stat-wil" class="text-[#e8c96a] font-bold">-</span> (<span id="mod-wil">-</span>)</div>
+        <div class="p-1 border border-[#1a1612]">🧠 智慧: <span id="stat-int" class="text-[#e8c96a] font-bold">-</span> (<span id="mod-int">-</span>)</div>
+        <div class="p-1 border border-[#1a1612]">🦁 學院分: <span id="ui-score" class="text-[#c9a84c] font-bold">0</span></div>
+        <div class="p-1 border border-[#1a1612]">🖤 黑魔法傾向: <span id="stat-dark" class="text-red-400 font-bold">0</span></div>
+        <div class="p-1 border border-[#1a1612]">🩹 狀態標籤: <span id="ui-status" class="text-green-400">良好</span></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <div class="lg:col-span-4 space-y-4 bg-[#1a1612] p-4 border border-[#3a2e1e] rounded max-h-[500px] overflow-y-auto">
+          <h4 id="schedule-title" class="text-sm font-bold text-[#c9a84c] border-b border-[#3a2e1e] pb-1">📅 階段一：平日課表時段探索 (請選 5 次)</h4>
+          <div id="schedule-area" class="grid grid-cols-1 gap-2 pt-2">
+            </div>
+          
+          <div class="border-t border-[#3a2e1e] pt-3">
+            <h5 class="text-xs font-bold text-[#8a7a5a] mb-1">🎒 背包與道具技能庫：</h5>
+            <div id="ui-inventory" class="text-[11px] text-[#e0d4b0] space-y-1 bg-[#0d0a06] p-2 rounded max-h-24 overflow-y-auto">無道具</div>
+            <div id="ui-skills" class="text-[11px] text-[#e0d4b0] space-y-1 bg-[#0d0a06] p-2 rounded max-h-24 overflow-y-auto mt-2">無解鎖技能</div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-8 flex flex-col justify-between">
+          <div id="gameLog" class="h-96 overflow-y-auto bg-[#0d0a06] border border-[#3a2e1e] p-4 rounded mb-2 text-sm leading-relaxed">
+            <p class="text-[#8a7a5a]">【系統】金鑰驗證中，請完成創角以啟動霍格華茲主循環...</p>
+          </div>
+          
+          <div id="sorting-panel" class="hidden bg-[#1a1612] p-3 border border-[#c9a84c] rounded mb-2 text-center space-y-2">
+            <p class="text-xs text-[#c9a84c] font-bold">✨ 分類帽：『嗯...野心？智慧？還是勇氣？你想去哪個學院？』(玩家擁有最高因果選擇權)</p>
+            <div class="grid grid-cols-4 gap-2">
+              <button onclick="selectHouse('Gryffindor', '葛來分多')" class="bg-[#7f1d1d] hover:bg-red-700 text-white font-bold py-2 rounded text-xs transition">🦁 葛來分多</button>
+              <button onclick="selectHouse('Slytherin', '史萊哲林')" class="bg-[#14532d] hover:bg-green-700 text-white font-bold py-2 rounded text-xs transition">🐍 史萊哲林</button>
+              <button onclick="selectHouse('Ravenclaw', '雷文克勞')" class="bg-[#1e3a8a] hover:bg-blue-700 text-white font-bold py-2 rounded text-xs transition">🦅 雷文克勞</button>
+              <button onclick="selectHouse('Hufflepuff', '赫夫帕夫')" class="bg-[#713f12] hover:bg-yellow-700 text-white font-bold py-2 rounded text-xs transition">🦡 赫夫帕夫</button>
+            </div>
+          </div>
+
+          <div id="chipsArea" class="flex flex-wrap gap-2 mb-2"></div>
+
+          <div id="input-area" class="flex gap-2">
+            <input type="text" id="playerInput" class="flex-1 bg-[#0d0a06] border border-[#3a2e1e] p-3 rounded text-sm text-white focus:outline-none focus:border-[#c9a84c]" placeholder="輸入你想做的任何精妙魔法行動或作戰策略...">
+            <button onclick="sendActionToGemini()" id="btnSend" class="bg-[#c9a84c] hover:bg-[#e8c96a] text-black font-bold px-6 py-3 rounded text-sm transition tracking-wider flex items-center gap-1">
+              🎲 執行行動 (D20)
+            </button>
+          </div>
+        </div>
+
+      </div>
+
     </div>
 
-    <div id="gameLog" class="h-96 overflow-y-auto bg-[#0d0a06] border border-[#3a2e1e] p-4 rounded mb-4 text-sm leading-relaxed">
-      <p class="text-[#8a7a5a]">【系統】金鑰通過初步驗證！請完成上述世界線設定並創角，接著點擊按鈕開局...</p>
-    </div>
-
-    <div id="chipsArea" class="flex flex-wrap gap-2 mb-4"></div>
-
-    <div id="input-area" class="hidden flex gap-2">
-      <input type="text" id="playerInput" class="flex-1 bg-[#0d0a06] border border-[#3a2e1e] p-3 rounded text-sm" placeholder="輸入你想做的任何精妙魔法行動...">
-      <button onclick="sendActionToGemini()" id="btnSend" class="bg-[#c9a84c] hover:bg-[#e8c96a] text-black font-bold px-6 py-3 rounded text-sm transition">
-        🎲 執行行動 (D20)
-      </button>
-    </div>
   </div>
 
   <script>
-    let conversationHistory = [];
-    let playerStats = { cha: 0, wil: 0, int: 0 };
+    // 1. 全局遊戲核心狀態資料結構 (V2 企劃標準)
+    let gameState = {
+      apiKey: "",
+      worldLine: { plot: "A", npc: "1", diagon: "yes" },
+      player: {
+        name: "", gender: "", blood: "", love: "", background: "",
+        house: "尚未分院", houseId: "",
+        year: 1, chapter: 1, quota: 5, phase: 1, // phase 1=平日, 2=假日, 3=假期/大考
+        money_nat: 3451, // 預設初始給予約 7 加隆（1加隆=493納特）
+        score: 0, dark_inclination: 0,
+        status: ["良好"]
+      },
+      stats: { charm: 10, willpower: 10, wisdom: 10 },
+      inventory: [{ id: "wand_standard", name: "標準奧利凡德魔杖", quantity: 1 }],
+      skills: [{ id: "spell_lumos", name: "路摸思 (Lumos)", proficiency: 10, type: "Spells" }],
+      npc_database: [],
+      clues: [],
+      conversationHistory: []
+    };
+
     let globalSystemPrompt = "";
+    let currentExpectedCheck = { active: false, attribute: "willpower", base_DC: 12 };
 
-    function rollStat() { return Math.floor(Math.random() * 21) + 10; }
+    const HOUND_TRANSLATION_MAP = {
+      "Gryffindor": "葛來分多", "Slytherin": "史萊哲林", "Ravenclaw": "雷文克勞", "Hufflepuff": "赫夫帕夫"
+    };
 
+    // 2. 歷史存檔偵測與防禦機制
+    function checkArchive() {
+      const saved = localStorage.getItem("hogwarts_simulator_v2_save");
+      const btnContinue = document.getElementById("btnContinue");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.player && parsed.player.name) {
+            btnContinue.classList.remove("hidden", "opacity-50", "cursor-not-allowed");
+            btnContinue.classList.add("bg-[#c9a84c]", "hover:bg-[#e8c96a]", "text-black");
+            alert(`【存檔校驗】成功！偵測到第 ${parsed.player.year} 學年巫師 [${parsed.player.name}] 的合法存檔。`);
+            return;
+          }
+        } catch (e) {
+          localStorage.removeItem("hogwarts_simulator_v2_save");
+        }
+      }
+      alert("【存檔校驗】本地查無既存存檔，請填寫下方欄位開設新遊戲。");
+    }
+
+    function saveGame() {
+      localStorage.setItem("hogwarts_simulator_v2_save", JSON.stringify(gameState));
+    }
+
+    function loadGame() {
+      const saved = localStorage.getItem("hogwarts_simulator_v2_save");
+      if (!saved) return;
+      gameState = JSON.parse(saved);
+      document.getElementById("apiKeyInput").value = gameState.apiKey;
+      
+      // 切換 UI
+      document.getElementById("setup-area").classList.add("hidden");
+      document.getElementById("game-panel").classList.remove("hidden");
+      
+      updateUI();
+      logToGame(`<p class="text-green-400">【系統】成功讀取記憶水晶，時空固化完畢。歡迎回到霍格華茲，${gameState.player.name}。</p>`);
+      renderSchedulePanel();
+    }
+
+    // 3. 計算核心 6 屬性之檢定修正值 (Modifier)
+    function getModifier(val) {
+      if (val >= 100) return 3;
+      if (val >= 80) return 2;
+      if (val >= 50) return 1;
+      return 0;
+    }
+
+    function updateUI() {
+      document.getElementById("ui-name").innerText = gameState.player.name;
+      document.getElementById("ui-blood").innerText = gameState.player.blood;
+      document.getElementById("ui-house").innerText = gameState.player.house;
+      document.getElementById("ui-time").innerText = `第 ${gameState.player.year} 學年 第 ${gameState.player.chapter} 章 (週)`;
+      document.getElementById("ui-quota").innerText = `${gameState.player.quota}/5 (${gameState.player.phase === 1 ? '平日' : '假日'})`;
+      
+      // 金額十進位與非十進位公式雙向重組運算
+      let total_nat = gameState.player.money_nat;
+      let g = Math.floor(total_nat / 493);
+      let rem = total_nat % 493;
+      let s = Math.floor(rem / 23);
+      let n = rem % 23;
+      document.getElementById("ui-money").innerText = `${g} 加隆 ${s} 西可 ${n} 納特`;
+
+      // 屬性與修正值常駐面板渲染
+      document.getElementById("stat-cha").innerText = gameState.stats.charm;
+      document.getElementById("mod-cha").innerText = `修正值 +${getModifier(gameState.stats.charm)}`;
+      document.getElementById("stat-wil").innerText = gameState.stats.willpower;
+      document.getElementById("mod-wil").innerText = `修正值 +${getModifier(gameState.stats.willpower)}`;
+      document.getElementById("stat-int").innerText = gameState.stats.wisdom;
+      document.getElementById("mod-int").innerText = `修正值 +${getModifier(gameState.stats.wisdom)}`;
+      
+      document.getElementById("ui-score").innerText = gameState.player.score;
+      document.getElementById("stat-dark").innerText = gameState.player.dark_inclination;
+      document.getElementById("ui-status").innerText = gameState.player.status.join(", ");
+
+      // 道具背包與技能面板渲染
+      const invDiv = document.getElementById("ui-inventory");
+      invDiv.innerHTML = gameState.inventory.map(i => `<div>📦 ${i.name} x${i.quantity}</div>`).join("") || "空無一物";
+      const sklDiv = document.getElementById("ui-skills");
+      sklDiv.innerHTML = gameState.skills.map(s => `<div>🪄 [${s.type}] ${s.name}: ${s.proficiency}%</div>`).join("") || "尚無解鎖技能";
+    }
+
+    // 4. 開局初始化六大步驟核心邏輯
     function lockAndStart() {
       const apiKey = document.getElementById('apiKeyInput').value.trim();
       const name = document.getElementById('char-name').value.trim();
-      const blood = document.getElementById('char-blood').value;
-      const plot = document.getElementById('world-plot').value;
-      const npc = document.getElementById('world-npc').value;
-
       if (!apiKey) return alert('請先輸入您的 Gemini API Key！');
       if (!name) return alert('請填寫您的巫師姓名！');
 
-      playerStats.cha = rollStat();
-      playerStats.wil = rollStat();
-      playerStats.int = rollStat();
+      // 覆蓋存檔行為：清除舊存檔
+      localStorage.removeItem("hogwarts_simulator_v2_save");
 
-      document.getElementById('stat-cha').innerText = playerStats.cha;
-      document.getElementById('stat-wil').innerText = playerStats.wil;
-      document.getElementById('stat-int').innerText = playerStats.int;
-      document.getElementById('stat-world').innerText = `${plot}${npc}世界線`;
-      document.getElementById('status-panel').classList.remove('hidden');
-      document.getElementById('input-area').classList.remove('hidden');
-      document.getElementById('setup-area').classList.add('hidden');
+      gameState.apiKey = apiKey;
+      gameState.worldLine.plot = document.getElementById("world-plot").value;
+      gameState.worldLine.npc = document.getElementById("world-npc").value;
+      gameState.worldLine.diagon = document.getElementById("world-diagon").value;
 
-      globalSystemPrompt = `你是一個極致沉浸的霍格華茲模擬器遊戲引擎。請完全使用台灣繁體中文（葛來分多、史萊哲林、斜角巷）。
-      【世界線設定】：此世界線為 ${plot}${npc} 模式（劇情模式:${plot}, NPC庫:${npc}）。
-      【主角設定】：姓名：${name}，血統：${blood}，初始屬性：魅力 ${playerStats.cha}、意志 ${playerStats.wil}、智慧 ${playerStats.int}。
-      【重要規範】：你負責扮演 GM。每次回傳請嚴格生成符合格式的 JSON，包含 narrative_text (小說情節，字數150-200字，將後台D20判定結果隱性編織進微表情或環境中，絕對不可洩露數值字眼) 與 suggested_actions (3個建議選項)。`;
+      gameState.player.name = name;
+      gameState.player.gender = document.getElementById("char-gender").value;
+      gameState.player.blood = document.getElementById("char-blood").value;
+      gameState.player.love = document.getElementById("char-love").value;
+      gameState.player.background = document.getElementById("char-background").value;
 
-      document.getElementById('gameLog').innerHTML = `<p class="text-[#8a7a5a]">【系統】正在連結九又四分之三月台，魔法網路建立中...</p>`;
-      sendActionToGemini("【系統防呆自動觸發】：請讀取主角背景，為玩家生成第一封霍格華茲入學通知信，並引導至斜角巷採買或旅程開局。");
+      // 屬性初始化防呆鎖定 (10~30隨機)
+      gameState.stats.charm = Math.floor(Math.random() * 21) + 10;
+      gameState.stats.willpower = Math.floor(Math.random() * 21) + 10;
+      gameState.stats.wisdom = Math.floor(Math.random() * 21) + 10;
+
+      document.getElementById("setup-area").classList.add("hidden");
+      document.getElementById("game-panel").classList.remove("hidden");
+      updateUI();
+
+      // 注入極致嚴格的 V2 大型系統提示詞 (System Instruction)
+      globalSystemPrompt = `你是一個極致沉浸的霍格華茲模擬器遊戲引擎與最高GM。
+【重要規範】：你負責扮演 GM。每次回傳請嚴格生成符合格式的 JSON，包含 narrative_text (小說情節) 與 suggested_actions (3個建議選項)。
+【語系與譯名鐵律】：完全使用台灣繁體中文。哈利波特專有詞彙與角色人名，嚴格採用台灣皇冠出版社繁體中文版本（例如：葛來分多、史萊哲林、雷文克勞、赫夫帕夫、斜角巷、活米村、鄧不利多、石內卜、麥教授、妙麗）。絕對禁止使用格蘭芬多、斯萊特林、對角巷、斯內普、赫敏等大陸或網路譯名。
+【後台數值絕對隱蔽】：嚴格禁止在小說敘事文本中出現任何後台數值、屬性名稱、DC、骰點成功失敗等遊戲系統字眼。所有判定結果必須隱性編織進角色的微表情與環境動態中。
+【日常敘事限制】：字數嚴格控制在 150 - 200 字精煉文筆。英式冷幽默風格。
+【當前世界線】：劇情模式 ${gameState.worldLine.plot}, NPC角色庫模式 ${gameState.worldLine.npc}。
+【主角設定】：姓名：${gameState.player.name}，性別：${gameState.player.gender}，血統：${gameState.player.blood}，背景故事：${gameState.player.background || "無"}。`;
+
+      logToGame(`<p class="text-[#8a7a5a]">【系統】正在連結九又四分之三月台，魔法網絡建立中...</p>`);
+
+      // 依據步驟 5 的分流選擇發送開局指令
+      if (gameState.worldLine.diagon === "yes") {
+        sendActionToGemini("【系統初始化啟動】：請讀取主角背景，為玩家生成第一封霍格華茲入學通知信（字數受限200字內），引導玩家體驗里程碑 5-A：前往斜角巷採買魔杖與日常物資。並在末尾提供3個不同的行動晶片。");
+      } else {
+        sendActionToGemini("【系統初始化啟動】：快速黑幕跳轉。請一筆帶過入學通知與採買旅程，小說文本開頭即是玩家已經站在大禮堂的雙扇大門前，準備進行分院儀式。");
+      }
+      
+      renderSchedulePanel();
     }
 
-    function clickChip(text) {
-      document.getElementById('playerInput').value = text;
+    // 5. 雙階段時間與課表動態渲染面板 (前端硬控)
+    function renderSchedulePanel() {
+      const area = document.getElementById("schedule-area");
+      const title = document.getElementById("schedule-title");
+      area.innerHTML = "";
+
+      if (gameState.player.phase === 1) {
+        title.innerText = "📅 階段一：平日課表時段探索 (請選 5 次)";
+        const coreClasses = [
+          { name: "🔮 符咒學課堂 (Charms)", id: "class_charms" },
+          { name: "🍃 藥草學溫室 (Herbology)", id: "class_herbology" },
+          { name: "🛡️ 黑魔法防禦術 (DADA)", id: "class_dada" },
+          { name: "🧪 魔藥學地下室 (Potions)", id: "class_potions" },
+          { name: "🏰 城堡密道探索 (Explore)", id: "explore_castle" }
+        ];
+        coreClasses.forEach(c => {
+          area.innerHTML += `<button onclick="selectSchedule('${c.name}', '${c.id}')" class="w-full text-left bg-[#0d0a06] hover:bg-[#3a2e1e] border border-[#3a2e1e] p-2 rounded text-xs text-[#e0d4b0] transition flex justify-between items-center">
+            <span>${c.name}</span> <span class="text-[10px] text-[#8a7a5a]">消耗 1 額度</span>
+          </button>`;
+        });
+      } else {
+        title.innerText = "📆 階段二：週末假日自由時間 (請選 1 次)";
+        const weekendActivities = [
+          { name: "🍻 活米村三根掃帚 (Hogsmeade)", id: "holiday_hogsmeade" },
+          { name: "🧹 魁地奇球場練習 (Quidditch)", id: "holiday_quidditch" },
+          { name: "📚 圖書館深度溫書 (Library)", id: "holiday_library" }
+        ];
+        weekendActivities.forEach(a => {
+          area.innerHTML += `<button onclick="selectSchedule('${a.name}', '${a.id}')" class="w-full text-left bg-[#1a1612] hover:bg-[#5a4e3b] border border-[#c9a84c] p-2 rounded text-xs text-[#e8c96a] transition flex justify-between items-center">
+            <span>${a.name}</span> <span class="text-[10px] text-[#c9a84c]">消耗假日額度</span>
+          </button>`;
+        });
+      }
     }
 
+    function selectSchedule(name, id) {
+      if (gameState.player.quota <= 0) {
+        alert("本階段行動額度已耗盡，請先執行現有行動或等待翻頁結算！");
+        return;
+      }
+      document.getElementById("playerInput").value = `前往執行：${name}。`;
+      // 設定動態檢定期望值 (企劃案 DC 機制防護)
+      currentExpectedCheck.active = true;
+      currentExpectedCheck.attribute = id.includes("potions") || id.includes("library") ? "wisdom" : "willpower";
+      currentExpectedCheck.base_DC = 11 + gameState.player.year; // 隨學年微幅上漲
+    }
+
+    // 6. 前端非同步條件約束五步骰點檢定閉環核心 (D20 Core Loop)
     async function sendActionToGemini(forcedText = null) {
-      const apiKey = document.getElementById('apiKeyInput').value.trim();
       const playerInput = document.getElementById('playerInput');
-      const text = forcedText || playerInput.value.trim();
+      let text = forcedText || playerInput.value.trim();
       const gameLog = document.getElementById('gameLog');
       const btnSend = document.getElementById('btnSend');
 
-      if (!text) return alert('請輸入行動或點選下方晶片！');
+      if (!text) return alert('請輸入行動或點選下方建議晶片！');
 
+      btnSend.disabled = true;
+      btnSend.innerText = '引導魔力中...';
+
+      let diceRoll = 0;
+      let modifierBonus = 0;
+      let totalPreScore = 0;
+      let finalDecision = "success"; 
+
+      // 步驟三：前端攔截、靜態加總與天命覆蓋優先權判定
       if (!forcedText) {
-        const diceRoll = Math.floor(Math.random() * 20) + 1;
-        gameLog.innerHTML += `<p class="text-[#e8c96a] mt-4"><b>你執行行動：</b>${text} <span class="text-xs text-[#8a7a5a]">(🎲 物理D20真實骰點: ${diceRoll})</span></p>`;
+        gameState.player.quota--;
+        diceRoll = Math.floor(Math.random() * 20) + 1;
+        
+        let attr = currentExpectedCheck.attribute;
+        let statVal = gameState.stats[attr] || 10;
+        modifierBonus = getModifier(statVal);
+        
+        // 受傷或透支狀態惡性標籤 -2 負向硬控
+        if (gameState.player.status.includes("受傷") || gameState.player.status.includes("魔力透支")) {
+          modifierBonus -= 2;
+        }
+
+        totalPreScore = diceRoll + modifierBonus;
+        let dc = currentExpectedCheck.base_DC;
+
+        // 天命骰點優先權查核
+        if (diceRoll === 20) {
+          finalDecision = "critical_success";
+        } else if (diceRoll === 1) {
+          finalDecision = "critical_failure";
+        } else if (totalPreScore >= dc + 5) {
+          finalDecision = "critical_success";
+        } else if (totalPreScore < dc) {
+          finalDecision = (dc - totalPreScore >= 5) ? "critical_failure" : "failure";
+        } else {
+          finalDecision = "success";
+        }
+
+        logToGame(`<p class="text-[#e8c96a] mt-3"><b>🧙‍♂️ 你的行動：</b>${text} <span class="text-xs text-[#8a7a5a]">(🎲 物理D20真實骰點: ${diceRoll} + 屬性修正: ${modifierBonus} = 總分 ${totalPreScore} vs 挑戰DC: ${dc})</span></p>`);
         playerInput.value = '';
       }
 
-      btnSend.disabled = true;
-      btnSend.innerText = '魔力引導中...';
+      // 構建非同步硬性約束提示，強控 AI 命運分支
+      let runtimeInstruction = forcedText ? "" : `\n【天命裁判硬控指令】：此輪檢定已被前端強制宣判為「${finalDecision}」。你唯一的權限是挑選一個符合的 "action_bonus" (加值) 並完全服從此結局。小說敘事請天衣無縫地描寫符合 ${finalDecision} 的情節，絕對不可洩漏數值。`;
 
-      conversationHistory.push({ role: 'user', parts: [{ text: text }] });
+      gameState.conversationHistory.push({ role: 'user', parts: [{ text: text + runtimeInstruction }] });
 
       try {
-        // ✨ 改用最新、完全相容的全新模型：gemini-2.5-flash
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${gameState.apiKey}`;
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: conversationHistory,
+            contents: gameState.conversationHistory,
             systemInstruction: { parts: [{ text: globalSystemPrompt }] },
             generationConfig: {
               temperature: 0.7,
@@ -148,7 +434,12 @@
                 type: 'OBJECT',
                 properties: {
                   narrative_text: { type: 'STRING' },
-                  suggested_actions: { type: 'ARRAY', items: { type: 'STRING' } }
+                  suggested_actions: { type: 'ARRAY', items: { type: 'STRING' } },
+                  action_bonus: { type: 'INTEGER' }, // AI 可填 2, 0, -2 評分
+                  house_points_delta: { type: 'INTEGER' }, // 學院分變動
+                  dark_delta: { type: 'INTEGER' },
+                  add_inventory_id: { type: 'STRING' },
+                  add_inventory_name: { type: 'STRING' }
                 },
                 required: ['narrative_text', 'suggested_actions']
               }
@@ -161,25 +452,110 @@
           const rawJsonText = data.candidates[0].content.parts[0].text;
           const gameObject = JSON.parse(rawJsonText);
 
-          gameLog.innerHTML += `<p class="text-[#e0d4b0] mt-4">${gameObject.narrative_text}</p>`;
-          conversationHistory.push({ role: 'model', parts: [{ text: rawJsonText }] });
+          // 渲染小說敘事
+          logToGame(`<p class="text-[#e0d4b0] mt-3">${gameObject.narrative_text}</p>`);
+          gameState.conversationHistory.push({ role: 'model', parts: [{ text: rawJsonText }] });
 
+          // 處理後台數據固化變更
+          if (gameObject.house_points_delta) gameState.player.score += gameObject.house_points_delta;
+          if (gameObject.dark_delta) gameState.player.dark_inclination += gameObject.dark_delta;
+          if (gameObject.add_inventory_id) {
+            gameState.inventory.push({ id: gameObject.add_inventory_id, name: gameObject.add_inventory_name || "未知魔法物", quantity: 1 });
+          }
+
+          // 偵測是否到達原著分院儀式的臨界點，若包含指定字眼，解鎖分院強制面板
+          if (gameObject.narrative_text.includes("分類帽") || gameObject.narrative_text.includes("分院儀式")) {
+            if (gameState.player.houseId === "") {
+              document.getElementById("sorting-panel").classList.remove("hidden");
+            }
+          }
+
+          // 渲染動態選項晶片 (Chips)
           const chipsArea = document.getElementById('chipsArea');
           chipsArea.innerHTML = '';
           gameObject.suggested_actions.forEach(act => {
             chipsArea.innerHTML += `<button onclick="clickChip('${act}')" class="bg-[#1a1612] hover:bg-[#3a2e1e] border border-[#3a2e1e] text-xs px-3 py-1.5 rounded text-[#e0d4b0] transition">${act}</button>`;
           });
 
+          // 自動章節時間線性推進流程控制
+          handlePhaseProgression();
+
         } else {
-          gameLog.innerHTML += `<p class="text-red-400 mt-4">【錯誤】連線異常。原因：${JSON.stringify(data)}</p>`;
+          logToGame(`<p class="text-red-400 mt-3">【皮皮鬼搗蛋】連線異常，魔力解析失敗：${JSON.stringify(data)}</p>`);
         }
       } catch (error) {
-        gameLog.innerHTML += `<p class="text-red-400 mt-4">【魔法連線失敗】請重新檢查網路或重開網頁試試。</p>`;
+        logToGame(`<p class="text-red-400 mt-3">【魔法連線失敗】請檢查 API Key 是否正確或網路遭遇催狂魔攔截。</p>`);
+        console.error(error);
       } finally {
         btnSend.disabled = false;
         btnSend.innerText = '🎲 執行行動 (D20)';
-        gameLog.scrollTop = gameLog.scrollHeight;
+        updateUI();
+        saveGame(); // 自動固化存檔至 localStorage
       }
+    }
+
+    // 7. 二階段時間翻頁與防退學平衡控制演算法
+    function handlePhaseProgression() {
+      if (gameState.player.quota <= 0) {
+        if (gameState.player.phase === 1) {
+          // 平日消耗完畢 ➔ 自動翻頁至週末解鎖期
+          gameState.player.phase = 2;
+          gameState.player.quota = 1;
+          logToGame(`<p class="text-[#c9a84c] mt-2">✨ 【時間流逝】週五的下課鐘聲響起，城堡的雙扇大門敞開，週末假日自由時間解鎖！</p>`);
+        } else {
+          // 週末也消耗完畢 ➔ 觸發全章週結算
+          settleWeeklyChapter();
+        }
+        renderSchedulePanel();
+      }
+    }
+
+    function settleWeeklyChapter() {
+      gameState.player.chapter++;
+      gameState.player.phase = 1;
+      gameState.player.quota = 5;
+
+      logToGame(`<p class="text-[#8a7a5a] mt-4 p-2 bg-[#1a1612] border border-[#3a2e1e] rounded">📝 【第 ${gameState.player.chapter - 1} 週章節結算】飛羽信使傳回本週報告。四大學院盃競爭劇烈，你的身心狀況已重置為最佳狀態。</p>`);
+
+      // 動態防躺贏 Rubber-Banding 橡皮筋動態平衡演算法
+      if (gameState.player.score > 50) {
+        logToGame(`<p class="text-xs text-red-400">⚠️ 【動態追趕權重校正】因你所屬學院分數大幅領先，其餘三院發動逆襲，日常檢定難度隱性提升！</p>`);
+      }
+
+      // 學年終曲大循環結算點 (第 10 章結束)
+      if (gameState.player.chapter > 10) {
+        gameState.player.year++;
+        gameState.player.chapter = 1;
+        logToGame(`<h3 class="text-lg font-bold text-[#c9a84c] mt-4 text-center">🏆 【霍格華茲學年年終晚宴】 🏆</h3>`);
+        logToGame(`<p class="text-white">無數懸浮蠟燭在頭頂閃爍。鄧不利多校長站起身宣布學院盃得主。因數據固化成功，你正式晉升至第 ${gameState.player.year} 學年！</p>`);
+      }
+    }
+
+    // 8. 專屬分院因果鎖定（開局固化、重置歷史記憶體釋放）
+    function selectHouse(houseId, houseName) {
+      gameState.player.houseId = houseId;
+      gameState.player.house = houseName;
+      document.getElementById("ui-house").innerText = houseName;
+      document.getElementById("sorting-panel").classList.add("hidden");
+
+      logToGame(`<p class="text-xl font-bold text-[#c9a84c] mt-4 text-center">🦁 🎩 『那就是——${houseName}！』大禮堂爆發出雷鳴般的掌聲！</p>`);
+
+      // 核心技術規範：存檔固化成功後，徹底重置歷史對話，防範 Context 爆量崩潰
+      gameState.conversationHistory = [];
+      saveGame();
+
+      // 正式發送第 1 章啟動指令
+      sendActionToGemini(`【分院正式固化確認】：玩家已正式加入${houseName}。請釋放前序暫存記憶，以該學院一年級新生的起點，正式開啟「第 1 章（第 1 週）」常規魔法校園生活生活。`);
+    }
+
+    function clickChip(text) {
+      document.getElementById('playerInput').value = text;
+    }
+
+    function logToGame(htmlContent) {
+      const gameLog = document.getElementById('gameLog');
+      gameLog.innerHTML += htmlContent;
+      gameLog.scrollTop = gameLog.scrollHeight;
     }
   </script>
 </body>
