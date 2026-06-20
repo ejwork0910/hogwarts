@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>霍格華茲模擬器 - 智慧跑團 GM 完全版 V2.7</title>
+<title>霍格華茲模擬器 - 智慧跑團 GM 完全版 V2.8</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   body { background-color: #0d0a06; color: #e0d4b0; font-family: serif; }
@@ -17,11 +17,13 @@
 
   <div class="max-w-5xl mx-auto w-full bg-[#12100c] border border-[#3a2e1e] p-3 sm:p-6 rounded-lg shadow-2xl flex flex-col justify-between min-h-[90vh]">
     
+    <!-- 標頭 -->
     <div>
       <h1 class="text-2xl sm:text-3xl font-bold text-[#c9a84c] text-center mb-1">🧙‍♂️ 霍格華茲模擬器</h1>
-      <p class="text-[10px] sm:text-xs text-center text-[#8a7a5a] mb-4 sm:mb-6">跨平台沉浸式 TRPG 遊戲引擎 (V2.7 Engine)</p>
+      <p class="text-[10px] sm:text-xs text-center text-[#8a7a5a] mb-4 sm:mb-6">跨平台沉浸式 TRPG 遊戲引擎 (V2.8 Bug-Fix Engine)</p>
     </div>
 
+    <!-- 1. 設定與創角區 -->
     <div id="setup-area" class="space-y-4 bg-[#1a1612] p-4 sm:p-6 border border-[#3a2e1e] rounded mb-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
@@ -91,8 +93,10 @@
       </div>
     </div>
 
+    <!-- 2. 主遊戲核心面板 -->
     <div id="game-panel" class="hidden space-y-3">
       
+      <!-- 頂部狀態常駐渲染欄 -->
       <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-center bg-[#1a1612] p-2.5 border border-[#3a2e1e] rounded text-[11px] sm:text-xs">
         <div class="text-left md:text-center">🧙‍♂️ 姓名: <span id="ui-name" class="text-white font-bold">-</span></div>
         <div class="text-right md:text-center">🩸 血統: <span id="ui-blood" class="text-white font-bold">-</span></div>
@@ -102,6 +106,7 @@
         <div class="text-right md:text-center">💰 財富: <span id="ui-money" class="text-[#e8c96a] font-bold">-</span></div>
       </div>
 
+      <!-- 核心屬性面板 -->
       <div class="grid grid-cols-3 md:grid-cols-6 gap-1.5 text-center bg-[#0d0a06] p-2 border border-[#3a2e1e] rounded text-[10px] sm:text-xs">
         <div class="p-1 border border-[#1a1612]">🔮 魅力: <span id="stat-cha" class="text-[#e8c96a] font-bold">-</span><br><span id="mod-cha" class="text-[9px] text-[#8a7a5a]">-</span></div>
         <div class="p-1 border border-[#1a1612]">🛡️ 意志: <span id="stat-wil" class="text-[#e8c96a] font-bold">-</span><br><span id="mod-wil" class="text-[9px] text-[#8a7a5a]">-</span></div>
@@ -111,8 +116,10 @@
         <div class="p-1 border border-[#1a1612]">🩹 狀態:<br><span id="ui-status" class="text-green-400 font-bold text-[9px]">良好</span></div>
       </div>
 
+      <!-- 中段主要內容排版 -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
         
+        <!-- 左欄：動態時間與課表選擇面板 -->
         <div id="left-schedule-panel" class="hidden lg:col-span-4 space-y-3 bg-[#1a1612] p-3 border border-[#3a2e1e] rounded max-h-[220px] lg:max-h-[500px] overflow-y-auto">
           <h4 id="schedule-title" class="text-xs font-bold text-[#c9a84c] border-b border-[#3a2e1e] pb-1">📅 階段一：平日課表時段探索</h4>
           <div id="schedule-area" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1.5 pt-1.5"></div>
@@ -129,9 +136,11 @@
           </div>
         </div>
 
+        <!-- 右欄：核心文本日誌與互動輸入區 -->
         <div id="right-narrative-panel" class="lg:col-span-12 flex flex-col justify-between">
           <div id="gameLog" class="h-64 sm:h-80 lg:h-[340px] overflow-y-auto bg-[#0d0a06] border border-[#3a2e1e] p-3 sm:p-4 rounded mb-2 text-xs sm:text-sm leading-relaxed"></div>
           
+          <!-- 分院專用強制按鈕面板 -->
           <div id="sorting-panel" class="hidden bg-[#1a1612] p-3 border border-[#c9a84c] rounded mb-2 text-center space-y-2">
             <p class="text-[11px] sm:text-xs text-[#c9a84c] font-bold">✨ 分類帽：『你想去哪個學院？』(玩家最高選擇權)</p>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -142,12 +151,14 @@
             </div>
           </div>
 
+          <!-- 建議行動晶片區 -->
           <div id="chipsArea" class="flex flex-col sm:flex-row flex-wrap gap-1.5 mb-2"></div>
 
+          <!-- 互動與檢定輸入區 -->
           <div class="flex flex-col sm:flex-row gap-2">
             <div class="flex-1 flex gap-2">
               <input type="text" id="playerInput" class="flex-1 bg-[#0d0a06] border border-[#3a2e1e] p-2.5 sm:p-3 rounded text-xs sm:text-sm text-white focus:outline-none focus:border-[#c9a84c]" placeholder="輸入你想執行的魔法或作戰策略...">
-              <button onclick="sendActionToGemini()" id="btnSend" class="bg-[#8a7a5a] text-black font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded text-xs sm:text-sm transition tracking-wider flex items-center gap-1 shrink-0">
+              <button onclick="handleSendButton()" id="btnSend" class="bg-[#8a7a5a] text-black font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded text-xs sm:text-sm transition tracking-wider flex items-center gap-1 shrink-0">
                 💬 送出行動
               </button>
             </div>
@@ -183,7 +194,14 @@
       conversationHistory: []
     };
 
-    let globalSystemPrompt = "";
+    // 系統底層提示詞定義
+    const baseSystemPrompt = `你是一個極致沉浸的霍格華茲模擬器遊戲引擎與最高GM。
+【重要規範】：你負責扮演 GM。每次回傳請嚴格生成符合格式的 JSON。包含 narrative_text 與 suggested_actions (3個建議選項)。
+【新增指令要求】：你必須決定下一次玩家的行動是否需要進行「骰點檢定」。如果需要，請在 JSON 中將 requires_check 設為 true，並指定對應的 attribute 與 base_DC。
+【問題 2 劇情編織鐵律】：玩家輸入的常規打字行動或點擊的選項晶片，都是一種「意圖」。你身為 GM，必須負責把玩家的這項「意圖」完全編織、渲染進隨後生成的 narrative_text 小說情節中，展開因果演變。絕對不允許直接在內文中死板地重複列出玩家的行動指令。
+【語系與譯名鐵律】：完全使用台灣繁體中文（葛來分多、史萊哲林、雷文克勞、赫夫帕夫、斜角巷、活米村、鄧不利多、石內卜、麥教授、妙麗）。絕對禁止使用格蘭芬多、斯萊特林等譯名。
+【日常敘事限制】：字數控制在 150 - 200 字內，英式冷幽默風格。不透露後台數值。`;
+
     let currentCheckRequirements = { active_check_required: false, attribute: "willpower", base_DC: 12 };
 
     function checkArchive() {
@@ -209,6 +227,7 @@
       localStorage.setItem("hogwarts_simulator_v2_save", JSON.stringify(gameState));
     }
 
+    // 問題 1 修正：讀取存檔時，若卡在分院前無對話紀錄，自動觸發喚醒
     function loadGame() {
       const saved = localStorage.getItem("hogwarts_simulator_v2_save");
       if (!saved) return;
@@ -221,6 +240,15 @@
       updateUI();
       logToGame(`<p class="text-green-400">【系統】記憶水晶加載完畢。歡迎回到霍格華茲，${gameState.player.name}。</p>`);
       renderSchedulePanel();
+
+      if (gameState.player.houseId === "" && gameState.conversationHistory.length === 0) {
+        logToGame(`<p class="text-[#8a7a5a]">【系統】偵測到尚未完成分院且對話中斷，正在為您重新喚醒分類帽...</p>`);
+        if (gameState.worldLine.diagon === "yes") {
+          sendActionToGemini(`【系統重載喚醒】：我是玩家「${gameState.player.name}」，我剛讀取了斜角巷開局的進度，請為我接續生成目前的場景與3個晶片選項。`);
+        } else {
+          sendActionToGemini(`【系統重載喚醒】：我是玩家「${gameState.player.name}」，我剛讀取了分院大禮堂開局的進度，請為我接續生成分院儀式場景與3個晶片選項。`);
+        }
+      }
     }
 
     function resetGame() {
@@ -290,7 +318,6 @@
       }
     }
 
-    // 問題 2 修正：強化 System Prompt 要求 AI 融合編織劇情
     function lockAndStart() {
       const apiKey = document.getElementById('apiKeyInput').value.trim();
       const name = document.getElementById('char-name').value.trim();
@@ -320,20 +347,12 @@
       document.getElementById('gameLog').innerHTML = "";
       updateUI();
 
-      globalSystemPrompt = `你是一個極致沉浸的霍格華茲模擬器遊戲引擎與最高GM。
-【重要規範】：你負責扮演 GM。每次回傳請嚴格生成符合格式的 JSON。包含 narrative_text 與 suggested_actions (3個建議選項)。
-【新增指令要求】：你必須決定下一次玩家的行動是否需要進行「骰點檢定」。如果需要，請在 JSON 中將 requires_check 設為 true。
-【問題 2 劇情編織鐵律】：玩家輸入的常規打字行動或點擊的選項晶片，都是一種「意圖」。你身為 GM，必須負責把玩家的這項「意圖」完全編織、渲染進隨後生成的 narrative_text 小說情節中，展開因果演變。絕對不允許直接在內文中死板地重複列出玩家的行動指令。
-【語系與譯名鐵律】：完全使用台灣繁體中文（葛來分多、史萊哲林、雷文克勞、赫夫帕夫、斜角巷、活米村、鄧不利多、石內卜、麥教授、妙麗）。絕對禁止使用格蘭芬多、斯萊特林等譯名。
-【日常敘事限制】：字數控制在 150 - 200 字內，英式冷幽默風格。不透露後台數值。`;
-
       logToGame(`<p class="text-[#8a7a5a]">【系統】魔法網絡建立中，正在開啟校園大門...</p>`);
 
-      // 問題 1 修正：強制將玩家真實姓名填入初始化指令，防止 AI 吐出 [玩家姓名]
       if (gameState.worldLine.diagon === "yes") {
-        sendActionToGemini(`【系統初始化啟動】：請讀取主角背景，為名叫「${name}」的玩家生成第一封霍格華茲入學通知信（200字內），引導玩家體驗里程碑 5-A：前往斜角巷採買魔杖與日常物資。請注意，信件與引導文字中的稱呼必須直接替換為真正的玩家名字「${name}」，絕對禁止輸出任何帶有中括號或代稱的［玩家姓名］或 [PlayerName] 標籤！最後提供3個不同的行動晶片選項。`);
+        sendActionToGemini(`【系統初始化啟動】：請讀取主角背景，為名叫「${name}」的玩家生成第一封霍格華茲入學通知信（200字內），引導玩家體驗里程碑 5-A：前往斜角巷採買魔杖與日常物資。請注意，信件與引導文字中的稱呼必須直接替換為真正的玩家名字「${name}」，絕對禁止輸出任何帶有中括號或代稱的［玩家姓名］標籤！最後提供3個不同的行動晶片選項。`, true);
       } else {
-        sendActionToGemini(`【系統初始化啟動】：快速快轉。請一筆帶過入學通知與採買旅程，小說文本開頭即是玩家「${name}」已經站在大禮堂的雙扇大門前，準備進行分院儀式。請注意內文直接使用「${name}」，嚴禁出現任何代稱標籤！`);
+        sendActionToGemini(`【系統初始化啟動】：快速快轉。請一筆帶過入學通知與採買旅程，小說文本開頭即是玩家「${name}」已經站在大禮堂的雙扇大門前，準備進行分院儀式。請注意內文直接使用「${name}」，嚴禁出現任何代稱標籤！`, true);
       }
       
       renderSchedulePanel();
@@ -385,16 +404,22 @@
       sendActionToGemini(`前往執行：${name}。`);
     }
 
+    // 問題 2 修正：點選晶片時，不再直接發送普通行動，一律由中央處理器控制是否執行 D20 判定
     function clickChip(text) {
       sendActionToGemini(text);
     }
 
-    async function sendActionToGemini(forcedText = null) {
+    function handleSendButton() {
       const playerInput = document.getElementById('playerInput');
-      let text = forcedText || playerInput.value.trim();
-      const btnSend = document.getElementById('btnSend');
-
+      let text = playerInput.value.trim();
       if (!text) return alert('請輸入行動或點選建議晶片！');
+      sendActionToGemini(text);
+    }
+
+    // 中央行動發送處理器
+    async function sendActionToGemini(text, isSystemInit = false) {
+      const playerInput = document.getElementById('playerInput');
+      const btnSend = document.getElementById('btnSend');
 
       btnSend.disabled = true;
       btnSend.innerText = '⏳';
@@ -404,7 +429,8 @@
       let totalPreScore = 0;
       let finalDecision = "none"; 
 
-      if (!forcedText && currentCheckRequirements.active_check_required) {
+      // 核心判定邏輯：不分點按鈕還是點晶片，只要 active_check_required 為 true 就走 D20 骰點
+      if (!isSystemInit && currentCheckRequirements.active_check_required) {
         gameState.player.quota--;
         diceRoll = Math.floor(Math.random() * 20) + 1;
         
@@ -428,7 +454,7 @@
         logToGame(`<p class="text-[#e8c96a] mt-3"><b>🎲 命運檢定：</b>${text} <span class="text-[10px] text-[#8a7a5a]">(骰點: ${diceRoll} + 修正: ${modifierBonus} = 總分 ${totalPreScore} vs DC: ${dc})</span></p>`);
         playerInput.value = '';
       } else {
-        if (!forcedText) {
+        if (!isSystemInit) {
           logToGame(`<p class="text-[#e0d4b0] mt-3"><b>💬 你的行動：</b>${text}</p>`);
           playerInput.value = '';
         }
@@ -444,7 +470,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: gameState.conversationHistory,
-            systemInstruction: { parts: [{ text: globalSystemPrompt }] },
+            systemInstruction: { parts: [{ text: baseSystemPrompt }] },
             generationConfig: {
               temperature: 0.7,
               responseMimeType: 'application/json',
@@ -467,10 +493,17 @@
           })
         });
 
-        // 問題 3 修正：精準監聽免費 API 額度用完 (HTTP 429) 或連線失敗
+        // 問題 3 修正：讀取錯誤詳情，精準區分每分鐘限制（RPM）與每日上限（RPD）
         if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          const errMsg = (errData.error && errData.error.message) ? errData.error.message : "";
+          
           if (response.status === 429) {
-            logToGame(`<p class="text-red-400 mt-2 p-2 bg-red-950/40 border border-red-900 rounded text-xs">⚠️ <b>【魔力枯竭 / 額度耗盡】</b> 偵測到您的 Gemini 免費 API 額度已達每分鐘上限！請保持冷靜，稍等 1 分鐘等魔力自然恢复後，再點擊送出行動。</p>`);
+            if (errMsg.includes("Quota exceeded") || errMsg.includes("daily limit") || errMsg.includes("Daily")) {
+              logToGame(`<p class="text-red-500 mt-2 p-2.5 bg-red-950/60 border border-red-700 rounded text-xs">🚨 <b>【大限已至 / 本日魔力耗盡】</b> 偵測到您的 Gemini 免費 API 密鑰已達到<b>「每日最大調用上限」</b>！這代表今天無法再向 Google 發送請求，需等待午夜跨日重置。如果您想繼續玩，建議更換另一組 API 金鑰。</p>`);
+            } else {
+              logToGame(`<p class="text-red-400 mt-2 p-2 bg-red-950/40 border border-red-900 rounded text-xs">⚠️ <b>【魔力冷卻中 / 每分鐘頻率超載】</b> 您的免費 API 每分鐘限制已滿！請保持冷靜，稍等 1 分鐘等魔力自動恢復後，再點擊送出行動。</p>`);
+            }
             btnSend.disabled = false;
             updateUI();
             return;
@@ -487,6 +520,7 @@
           logToGame(`<p class="text-[#e0d4b0] mt-2">${gameObject.narrative_text}</p>`);
           gameState.conversationHistory.push({ role: 'model', parts: [{ text: rawJsonText }] });
 
+          // 重新校準檢定狀態
           currentCheckRequirements.active_check_required = gameObject.requires_check || false;
           currentCheckRequirements.attribute = gameObject.attribute || "willpower";
           currentCheckRequirements.base_DC = gameObject.base_DC || 12;
@@ -509,6 +543,7 @@
             chipsArea.innerHTML += `<button onclick="clickChip('${act}')" class="w-full sm:w-auto text-left sm:text-center bg-[#1a1612] hover:bg-[#3a2e1e] border border-[#3a2e1e] text-xs px-3 py-2 rounded text-[#e0d4b0] transition block truncate">${act}</button>`;
           });
 
+          // 只有在分院完成後，平日假日的額度扣減與推進行動才生效
           if (gameState.player.houseId !== "") {
             handlePhaseProgression();
           }
@@ -548,16 +583,25 @@
       }
     }
 
+    // 問題 4 修正：在點擊學院的瞬間，強制將 quota 鎖死在平日 5 次，並洗掉任何之前的殘留扣額
     function selectHouse(houseId, houseName) {
       gameState.player.houseId = houseId;
       gameState.player.house = houseName;
+      
+      gameState.player.phase = 1; // 強制為平日
+      gameState.player.quota = 5; // 強制滿額
+      currentCheckRequirements.active_check_required = false; // 清除可能殘留的檢定狀態
+
       document.getElementById("ui-house").innerText = houseName;
       document.getElementById("sorting-panel").classList.add("hidden");
 
       logToGame(`<p class="text-md font-bold text-[#c9a84c] mt-3 text-center">🎩 『那就是——${houseName}！』</p>`);
+      
+      // 清空過度臃腫的開局歷史，重新開局
       gameState.conversationHistory = [];
       saveGame();
-      sendActionToGemini(`【分院正式固化確認】：玩家已加入${houseName}。請以該學院一年級新生起點正式開啟「第 1 章（第 1 週）」校園生活。`);
+      
+      sendActionToGemini(`【分院正式固化確認】：玩家已加入${houseName}。請以該學院一年級新生起點正式開啟「第 1 章（第 1 週）」校園生活。`, true);
     }
 
     function logToGame(htmlContent) {
